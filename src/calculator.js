@@ -1,60 +1,63 @@
-const display = document.getElementById('display');
+const display = document.getElementById("display");
 
-function appendValue(value) {
+function addToDisplay(value) {
   display.value += value;
 }
 
 function clearDisplay() {
-  display.value = '';
+  display.value = "";
 }
 
 function calculateResult() {
   try {
-    display.value = evaluateExpression(display.value);
+    display.value = readDisplay(display.value);
   } catch {
-    display.value = 'Error';
+    display.value = "Error";
   }
 }
 
-function evaluateExpression(expression) {
-  const sanitizedExpression = sanitizeExpression(expression);
-  const tokens = tokenize(sanitizedExpression);
-  const rpn = convertToRPN(tokens);
-  return evaluateRPN(rpn);
+function readDisplay(expression) {
+  const clearExpr = formatExpr(expression);
+  const tokens = extractTokens(clearExpr);
+  const reverseNotation = convertToReverseNotation(tokens);
+  return evaluateReverseNotation(reverseNotation);
 }
 
-function sanitizeExpression(expression) {
+function formatExpr(expression) {
   return expression
-    .replace(/\s+/g, '')                
-    .replace(/(\d)(\()/g, '$1*(')      
-    .replace(/(\))(\d)/g, ')*$2')      
-    .replace(/(\))(\()/g, ')*(')       
-    .replace(/\)\(/g, ')*(')           
-    .replace(/\(\(/g, '(')             
-    .replace(/\)\)/g, ')');            
+    .replace(/\s+/g, "")
+    .replace(/(\d)(\()/g, "$1*(")
+    .replace(/(\))(\d)/g, ")*$2")
+    .replace(/(\))(\()/g, ")*(")
+    .replace(/\)\(/g, ")*(")
+    .replace(/\(\(/g, "(")
+    .replace(/\)\)/g, ")");
 }
 
-function tokenize(expression) {
-  const regex = /\d+(\.\d+)?|[+\-*/()]|\s+/g;
-  return expression.match(regex).filter((token) => !/^\s+$/.test(token));
+function extractTokens(expression) {
+  const regex = /\d+(\.\d+)?|[+\-*/()]/g;
+  return expression.match(regex);
 }
 
-function convertToRPN(tokens) {
+function convertToReverseNotation(tokens) {
   const output = [];
   const stack = [];
 
   for (const token of tokens) {
     if (!isNaN(token)) {
       output.push(Number(token));
-    } else if (token === '(') {
+    } else if (token === "(") {
       stack.push(token);
-    } else if (token === ')') {
-      while (stack.length && stack[stack.length - 1] !== '(') {
+    } else if (token === ")") {
+      while (stack.length && stack[stack.length - 1] !== "(") {
         output.push(stack.pop());
       }
       stack.pop();
     } else {
-      while (stack.length && precedence(stack[stack.length - 1]) >= precedence(token)) {
+      while (
+        stack.length &&
+        precedence(stack[stack.length - 1]) >= precedence(token)
+      ) {
         output.push(stack.pop());
       }
       stack.push(token);
@@ -68,7 +71,7 @@ function convertToRPN(tokens) {
   return output;
 }
 
-function evaluateRPN(tokens) {
+function evaluateReverseNotation(tokens) {
   const stack = [];
 
   for (const token of tokens) {
@@ -85,31 +88,31 @@ function evaluateRPN(tokens) {
 }
 
 function precedence(operator) {
-  return operator === '+' || operator === '-' ? 1 : 2;
+  return operator === "+" || operator === "-" ? 1 : 2;
 }
 
 function applyOperator(a, b, operator) {
   switch (operator) {
-    case '+':
+    case "+":
       return a + b;
-    case '-':
+    case "-":
       return a - b;
-    case '*':
+    case "*":
       return a * b;
-    case '/':
+    case "/":
       return a / b;
     default:
-      throw new Error('Invalid Operator');
+      throw new Error("Invalid Operator");
   }
 }
 
-function calculateSqrt() {
+function calculateSquareRoot() {
   display.value = Math.sqrt(Number(display.value));
 }
 
 function calculatePower() {
-  const base = Number(prompt('Enter the base:'));
-  const exponent = Number(prompt('Enter the exponent:'));
+  const base = Number(display.value);
+  const exponent = Number(prompt("Enter the exponent:"));
   display.value = Math.pow(base, exponent);
 }
 
@@ -128,16 +131,16 @@ function calculatePi() {
 function calculateTrig(func) {
   const radians = Number(display.value) * (Math.PI / 180);
   switch (func) {
-    case 'sin':
+    case "sin":
       display.value = Math.sin(radians);
       break;
-    case 'cos':
+    case "cos":
       display.value = Math.cos(radians);
       break;
-    case 'tan':
+    case "tan":
       display.value = Math.tan(radians);
       break;
     default:
-      display.value = 'Error';
+      display.value = "Error";
   }
 }
