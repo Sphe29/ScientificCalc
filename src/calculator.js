@@ -1,6 +1,18 @@
 const display = document.getElementById("display");
 
 function addToDisplay(value) {
+  if (value === "." && display.value.includes(".")) {
+    return;
+  }
+
+  const lastChar = display.value[display.value.length - 1];
+  const operators = "+-*/%^";
+  if (
+    operators.includes(value) &&
+    (operators.includes(lastChar) || display.value === "")
+  ) {
+    return;
+  }
   display.value += value;
 }
 
@@ -8,11 +20,30 @@ function clearDisplay() {
   display.value = "";
 }
 
+function backspace() {
+  display.value = display.value.slice(0, -1);
+}
+
 function calculateResult() {
   try {
+    if (!isValidExpression(display.value)) {
+      throw new Error("Syntax Error");
+    }
     display.value = readDisplay(display.value);
-  } catch {
+    if (isNaN(display.value) || !isFinite(display.value)) {
+      throw new Error("Error");
+    }
+  } catch (error) {
     display.value = "Error";
+  }
+}
+
+function isValidExpression(expression) {
+  try {
+    new Function(`return (${expression})`);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -35,7 +66,7 @@ function formatExpr(expression) {
 }
 
 function extractTokens(expression) {
-  const regex = /\d+(\.\d+)?|[+\-*/()]/g;
+  const regex = /\d+(\.\d+)?|[+\-*/%^()]/g;
   return expression.match(regex);
 }
 
@@ -100,28 +131,28 @@ function applyOperator(a, b, operator) {
     case "*":
       return a * b;
     case "/":
-      return a / b;
+      return b === 0 ? "Error" : a / b;
+    case "^":
+      return Math.pow(a, b);
     default:
       throw new Error("Invalid Operator");
   }
 }
 
 function calculateSquareRoot() {
-  display.value = Math.sqrt(Number(display.value));
+  const value = Number(display.value);
+  display.value = value >= 0 ? Math.sqrt(value) : "Error";
 }
 
 function calculatePower() {
   const base = Number(display.value);
   const exponent = Number(prompt("Enter the exponent:"));
-  display.value = Math.pow(base, exponent);
-}
-
-function calculateExp() {
-  display.value = Math.exp(Number(display.value));
+  display.value = isNaN(exponent) ? "Error" : Math.pow(base, exponent);
 }
 
 function calculateLog() {
-  display.value = Math.log10(Number(display.value));
+  const value = Number(display.value);
+  display.value = value > 0 ? Math.log10(value) : "Error";
 }
 
 function calculatePi() {
@@ -143,4 +174,8 @@ function calculateTrig(func) {
     default:
       display.value = "Error";
   }
+}
+
+function calculatePercentage() {
+  display.value = Number(display.value) / 100;
 }
